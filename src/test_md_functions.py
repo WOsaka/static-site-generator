@@ -1,6 +1,12 @@
 import unittest
-from md_functions import split_nodes_delimiter
+from md_functions import (
+    split_nodes_delimiter,
+    extract_markdown_images,
+    extract_markdown_links,
+)
+
 from textnode import TextNode, TextType
+
 
 class TestFunctions(unittest.TestCase):
     def test_split_nodes_delimiter(self):
@@ -29,7 +35,7 @@ class TestFunctions(unittest.TestCase):
         node = TextNode("**This is bold**", TextType.BOLD)
         new_nodes = split_nodes_delimiter([node], "**", TextType.BOLD)
         self.assertEqual(new_nodes, [node])
-    
+
     def test_split_nodes_delimiter_multiple(self):
         node = TextNode("This is text with a `code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node, node], "`", TextType.CODE)
@@ -44,7 +50,7 @@ class TestFunctions(unittest.TestCase):
                 TextNode(" word", TextType.TEXT),
             ],
         )
-    
+
     def test_split_nodes_delimiter_beginning(self):
         node = TextNode("`code block` word", TextType.TEXT)
         new_nodes = split_nodes_delimiter([node], "`", TextType.CODE)
@@ -156,4 +162,27 @@ class TestFunctions(unittest.TestCase):
                 TextNode(" word", TextType.TEXT),
             ],
             new_nodes,
+        )
+
+    def test_extract_markdown_images(self):
+        text = "This is text with an image ![image](https://www.boot.dev/image.png)"
+        self.assertEqual(
+            [("image", "https://www.boot.dev/image.png")],
+            extract_markdown_images(text),
+        )
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_links(self):
+        text = "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)"
+        self.assertEqual(
+            [
+                ("to boot dev", "https://www.boot.dev"),
+                ("to youtube", "https://www.youtube.com/@bootdotdev"),
+            ],
+            extract_markdown_links(text),
         )
