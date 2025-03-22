@@ -8,7 +8,9 @@ from md_functions import (
     split_nodes_link,
     text_to_textnodes,
     markdown_to_blocks,
-)
+    block_to_block_type,
+    BlockType
+) 
 
 from textnode import TextNode, TextType
 
@@ -397,3 +399,40 @@ class TestFunctions(unittest.TestCase):
                 "- This is a list\n- with items",
             ],
         )
+
+
+    def test_block_to_block_type(self):
+        self.assertEqual(block_to_block_type("This is **bolded** text"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("- This is a list"), BlockType.UNORDERT_LIST)
+        self.assertEqual(block_to_block_type("1. This is an ordered list"), BlockType.ORDERED_LIST)
+        self.assertEqual(block_to_block_type("```python\nprint('Hello, World!')\n```"), BlockType.CODE)
+        self.assertEqual(block_to_block_type("> This is a quote"), BlockType.QUOTE)
+        self.assertEqual(block_to_block_type("### This is a heading"), BlockType.HEADING)
+    
+    def test_block_to_block_type_heading(self):
+        self.assertEqual(block_to_block_type("### This is a heading"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("###### This is a heading"), BlockType.HEADING)
+        self.assertEqual(block_to_block_type("####### This is a paragraph"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("#This is a paragraph"), BlockType.PARAGRAPH)
+        
+    def test_block_to_block_type_code(self):
+        self.assertEqual(block_to_block_type("```python\nprint('Hello, World!')\n```"), BlockType.CODE)
+        self.assertEqual(block_to_block_type("```python\nprint('Hello, World!')\n"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("python\nprint('Hello, World!')\n```"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("-This is a Paragraph"), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_quote(self):
+        self.assertEqual(block_to_block_type(">This is a Quote"), BlockType.QUOTE)
+        self.assertEqual(block_to_block_type(">This is a Quote\n>Quote"), BlockType.QUOTE)
+        self.assertEqual(block_to_block_type(">This is not a Quote\nQuote"), BlockType.PARAGRAPH)
+
+    def test_block_to_block_type_unordered_list(self):
+        self.assertEqual(block_to_block_type("- This is a List"), BlockType.UNORDERT_LIST)
+        self.assertEqual(block_to_block_type("- This is not a List\n-List"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("- This is a List\n- List"), BlockType.UNORDERT_LIST)
+
+    def test_block_to_block_type_ordered_list(self):
+        self.assertEqual(block_to_block_type("1. This is a List"), BlockType.ORDERED_LIST)
+        self.assertEqual(block_to_block_type("1. This is a List\n2. List"), BlockType.ORDERED_LIST)
+        self.assertEqual(block_to_block_type("1. This is not a List\n1. List"), BlockType.PARAGRAPH)
+        self.assertEqual(block_to_block_type("1. This is not a List\n2.List"), BlockType.PARAGRAPH)

@@ -1,5 +1,6 @@
 from textnode import TextNode, TextType
-from re import findall
+from re import findall, search
+from enum import Enum
 
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
@@ -140,3 +141,37 @@ def markdown_to_blocks(markdown):
         cleaned_blocks.append(cleaned_block.strip())
 
     return cleaned_blocks
+
+
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERT_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+
+
+def block_to_block_type(text):
+    if search(r"^(#{1,6})\s(.+)", text):
+        return BlockType.HEADING
+    elif text[:3] == "```" and text[-3:] == "```":
+        return BlockType.CODE
+    elif text[0] == ">":
+        for line in text.split("\n"):
+            if line[0] != ">":
+                return BlockType.PARAGRAPH
+        return BlockType.QUOTE
+    elif text[:2] == "- ":
+        for line in text.split("\n"):
+            if line[:2] != "- ":
+                return BlockType.PARAGRAPH
+        return BlockType.UNORDERT_LIST
+    elif text[:3] == "1. ":
+        lines = text.split("\n")
+        for i in range(len(lines)):
+            start = f"{i + 1}. "
+            if lines[i][: len(start)] != start:
+                return BlockType.PARAGRAPH
+        return BlockType.ORDERED_LIST
+    return BlockType.PARAGRAPH
