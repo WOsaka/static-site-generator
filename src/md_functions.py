@@ -128,3 +128,15 @@ def text_to_textnodes(text):
     split_b_i_c_img = split_nodes_image(split_b_i_c)
     split_b_i_c_img_lnk = split_nodes_link(split_b_i_c_img)
     return split_b_i_c_img_lnk
+
+
+def markdown_to_blocks(markdown):
+    block_strings = markdown.split("\n\n")
+
+    cleaned_blocks = []
+    for block in block_strings:
+        lines = block.split("\n")
+        cleaned_block = "\n".join(line.strip() for line in lines if line != "")
+        cleaned_blocks.append(cleaned_block.strip())
+
+    return cleaned_blocks
