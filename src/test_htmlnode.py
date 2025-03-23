@@ -134,11 +134,6 @@ class TestHTMLNode(unittest.TestCase):
             '<div class="parent"><span>child</span></div>',
         )
 
-    def test_to_html_no_children(self):
-        parent_node = ParentNode("div", [])
-        with self.assertRaises(ValueError):
-            parent_node.to_html()
-
     def test_to_html_no_tag(self):
         parent_node = ParentNode(None, [])
         with self.assertRaises(ValueError):

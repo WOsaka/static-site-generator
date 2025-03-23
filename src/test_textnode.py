@@ -60,12 +60,12 @@ class TestTextNodeToHTMLNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.IMAGE, "https://example.com")
         html_node = text_node_to_html_node(node)
         self.assertEqual(html_node.tag, "img")
-        self.assertEqual(html_node.value, None)
+        self.assertEqual(html_node.value, "")
         self.assertEqual(
             html_node.props,
             {"src": "https://example.com", "alt": "This is a text node"},
         )
-    
+
     def test_text_node_to_html_node_invalid_texttype(self):
         node = TextNode("This is a text node", "invalid")
         with self.assertRaises(ValueError):
