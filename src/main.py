@@ -1,13 +1,18 @@
 import os
 import shutil
+import sys
 from re import findall
 from textnode import TextNode, TextType
 from md_functions import markdown_to_html_node
 
 
 def main():
-    move_directory("static", "public")
-    generate_pages_recursive("content", "template.html", "public")
+    if len(sys.argv) > 1:
+        basepath = sys.argv[1]
+    else:
+        basepath = "/"
+    move_directory("static", "docs")
+    generate_pages_recursive("content", "template.html", "docs", basepath)
 
 
 def move_directory(source, destination):
@@ -33,7 +38,7 @@ def extract_titel(markdown):
     raise Exception("no h1 header")
 
 
-def generate_page(from_path, template_path, dest_path):
+def generate_page(from_path, template_path, dest_path, basepath):
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
     with open(from_path) as file:
         markdown = file.read()
@@ -43,6 +48,8 @@ def generate_page(from_path, template_path, dest_path):
     title = extract_titel(markdown)
     structured_html = template.replace("{{ Title }}", title)
     structured_html = structured_html.replace("{{ Content }}", content)
+    structured_html = structured_html.replace('href="/', f'href="{basepath}')
+    structured_html = structured_html.replace('src="/', f'src="{basepath}')
 
     dest_dir, _ = os.path.split(dest_path)
     if not os.path.exists(dest_dir):
@@ -52,7 +59,7 @@ def generate_page(from_path, template_path, dest_path):
         file.write(structured_html)
 
 
-def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path, basepath):
     if not os.path.exists(dir_path_content):
         raise Exception(f"{dir_path_content} doesn't exist")
 
@@ -60,19 +67,19 @@ def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
         raise Exception(f"{template_path} doesn't exist")
 
     if not os.path.exists(dest_dir_path):
-        raise Exception(f"{dest_dir_path} doesn't exist")
+        os.mkdir(dest_dir_path)
 
     for entry in os.listdir(dir_path_content):
         content_path = os.path.join(dir_path_content, entry)
         if os.path.isfile(content_path):
             dest_file = f"{".".join(entry.split(".")[:-1])}.html"
             dest_path = os.path.join(dest_dir_path, dest_file)
-            generate_page(content_path, template_path, dest_path)
+            generate_page(content_path, template_path, dest_path, basepath)
         elif os.path.isdir(content_path):
             dest_path = os.path.join(dest_dir_path, entry)
             if not os.path.exists(dest_path):
                 os.mkdir(dest_path)
-            generate_pages_recursive(content_path, template_path, dest_path)
+            generate_pages_recursive(content_path, template_path, dest_path, basepath)
 
 
 if __name__ == "__main__":
