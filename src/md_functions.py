@@ -213,7 +213,6 @@ def extract_list_items(list_md):
     return children
 
 
-
 def markdown_to_html_node(markdown):
     blocks = markdown_to_blocks(markdown)
 
