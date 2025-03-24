@@ -7,7 +7,7 @@ from md_functions import markdown_to_html_node
 
 def main():
     move_directory("static", "public")
-    generate_page("content/index.md", "template.html", "public/index.html")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 def move_directory(source, destination):
@@ -50,6 +50,29 @@ def generate_page(from_path, template_path, dest_path):
 
     with open(dest_path, "w") as file:
         file.write(structured_html)
+
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if not os.path.exists(dir_path_content):
+        raise Exception(f"{dir_path_content} doesn't exist")
+
+    if not os.path.exists(template_path):
+        raise Exception(f"{template_path} doesn't exist")
+
+    if not os.path.exists(dest_dir_path):
+        raise Exception(f"{dest_dir_path} doesn't exist")
+
+    for entry in os.listdir(dir_path_content):
+        content_path = os.path.join(dir_path_content, entry)
+        if os.path.isfile(content_path):
+            dest_file = f"{".".join(entry.split(".")[:-1])}.html"
+            dest_path = os.path.join(dest_dir_path, dest_file)
+            generate_page(content_path, template_path, dest_path)
+        elif os.path.isdir(content_path):
+            dest_path = os.path.join(dest_dir_path, entry)
+            if not os.path.exists(dest_path):
+                os.mkdir(dest_path)
+            generate_pages_recursive(content_path, template_path, dest_path)
 
 
 if __name__ == "__main__":
